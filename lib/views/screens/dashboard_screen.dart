@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:justdoit/viewmodels/todo_viewmodel.dart';
+import 'package:justdoit/viewmodels/window_viewmodel.dart';
+import 'package:justdoit/views/widgets/add_todo_modal.dart';
+import 'package:justdoit/views/widgets/todo_column.dart';
 import 'package:provider/provider.dart';
-import '../viewmodels/todo_viewmodel.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -35,7 +38,7 @@ class DashboardScreen extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: Icon(isLocked ? Icons.lock : Icons.unlock),
+            icon: Icon(isLocked ? Icons.lock : Icons.lock_open),
             onPressed: () async {
               await todoVM.toggleLock();
             },
