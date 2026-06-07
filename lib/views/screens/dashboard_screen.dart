@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:justdoit/viewmodels/todo_viewmodel.dart';
-import 'package:justdoit/viewmodels/window_viewmodel.dart';
-import 'package:justdoit/views/widgets/add_todo_modal.dart';
-import 'package:justdoit/views/widgets/todo_column.dart';
 import 'package:provider/provider.dart';
+import '../viewmodels/todo_viewmodel.dart';
+import '../viewmodels/window_viewmodel.dart';
+import '../views/widgets/add_todo_modal.dart';
+import '../views/widgets/todo_column.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final windowVM = context.watch<WindowViewModel>();
+    final windowVM = Provider.of<WindowViewModel>(context, listen: false);
     final isLocked = windowVM.isLocked;
     final colorScheme = Theme.of(context).colorScheme;
     final todoVM = Provider.of<TodoViewModel>(context, listen: false);
@@ -38,9 +38,9 @@ class DashboardScreen extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: Icon(isLocked ? Icons.lock : Icons.lock_open),
+            icon: Icon(isLocked ? Icons.lock : Icons.unlock),
             onPressed: () async {
-              await todoVM.toggleLock();
+              await windowVM.toggleLock();
             },
           ),
           IconButton(
