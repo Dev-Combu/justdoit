@@ -34,7 +34,7 @@ class DashboardScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      drawer: RecordModal(data: 'Dragged Data'), // Pass the dragged data here
+      drawer: RecordModal(),
       body: SafeArea(
         child: Stack(
           children: [
