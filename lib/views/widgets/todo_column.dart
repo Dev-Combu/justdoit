@@ -16,12 +16,12 @@ class TodoColumn extends StatelessWidget {
     final Color iconColor;
     final IconData headerIcon;
     switch (status) {
-      case 'NOW':
+      case 'TODAY':
         headerBgColor = Colors.redAccent.withValues(alpha: 0.12);
         iconColor = Colors.redAccent;
         headerIcon = Icons.bolt;
         break;
-      case 'TODAY':
+      case 'WEEK':
         headerBgColor = Colors.blueAccent.withValues(alpha: 0.12);
         iconColor = Colors.blueAccent;
         headerIcon = Icons.today;

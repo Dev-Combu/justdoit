@@ -21,7 +21,7 @@ class TodoViewModel with ChangeNotifier {
         return Todo(
           id: map['id'] ?? '',
           title: map['title'] ?? '',
-          status: map['status'] ?? 'NOW',
+          status: map['status'] ?? 'TODAY',
           isCompleted: map['isCompleted'] ?? false,
           completedAt: DateTime(
             1970,

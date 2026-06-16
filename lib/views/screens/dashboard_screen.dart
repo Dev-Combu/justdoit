@@ -24,8 +24,9 @@ class DashboardScreen extends StatelessWidget {
           width: 60,
           height: 4,
           decoration: BoxDecoration(
-            color: colorScheme.onSurface
-                .withValues(alpha: isLocked ? 0.05 : 0.4),
+            color: colorScheme.onSurface.withValues(
+              alpha: isLocked ? 0.05 : 0.4,
+            ),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -60,19 +61,17 @@ class DashboardScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-              margin:
-                  isLocked ? EdgeInsets.zero : const EdgeInsets.all(6.0),
+              margin: isLocked ? EdgeInsets.zero : const EdgeInsets.all(6.0),
               child: Column(
                 children: [
                   // Drag handle (only active when unlocked)
-                  isLocked
-                      ? dragHandle
-                      : DragToMoveArea(child: dragHandle),
-
+                  isLocked ? dragHandle : DragToMoveArea(child: dragHandle),
                   // ── Header ────────────────────────────────────────
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 2.0),
+                      horizontal: 16.0,
+                      vertical: 2.0,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -80,9 +79,7 @@ class DashboardScreen extends StatelessWidget {
                           children: [
                             Text(
                               'Just Do It',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineSmall
+                              style: Theme.of(context).textTheme.headlineSmall
                                   ?.copyWith(
                                     fontWeight: FontWeight.w900,
                                     color: Colors.black87,
@@ -92,7 +89,9 @@ class DashboardScreen extends StatelessWidget {
                               const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: colorScheme.primaryContainer,
                                   borderRadius: BorderRadius.circular(8),
@@ -117,6 +116,10 @@ class DashboardScreen extends StatelessWidget {
                           ),
                         ),
                         IconButton(
+                          onPressed: () => AddTodoModal.show(context),
+                          icon: const Icon(Icons.add),
+                        ),
+                        IconButton(
                           onPressed: windowVM.toggleLock,
                           icon: Icon(
                             isLocked
@@ -139,15 +142,17 @@ class DashboardScreen extends StatelessWidget {
                   const Expanded(
                     child: Padding(
                       padding: EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 4.0),
+                        horizontal: 8.0,
+                        vertical: 4.0,
+                      ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(child: TodoColumn(status: 'NOW')),
-                          SizedBox(width: 6),
                           Expanded(child: TodoColumn(status: 'TODAY')),
                           SizedBox(width: 6),
                           Expanded(child: TodoColumn(status: 'WEEK')),
+                          SizedBox(width: 6),
+                          Expanded(child: TodoColumn(status: 'MONTH')),
                         ],
                       ),
                     ),
@@ -161,13 +166,16 @@ class DashboardScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: colorScheme.primary.withValues(alpha: 0.08),
                         borderRadius: const BorderRadius.vertical(
-                            bottom: Radius.circular(18)),
+                          bottom: Radius.circular(18),
+                        ),
                       ),
                       child: const Center(
                         child: Text(
                           '💡 드래그하여 이동하고, 우측 하단 모서리를 끌어 크기를 조절하세요.',
                           style: TextStyle(
-                              fontSize: 9, fontWeight: FontWeight.bold),
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -208,12 +216,6 @@ class DashboardScreen extends StatelessWidget {
               ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => AddTodoModal.show(context),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Task'),
-        elevation: 4,
       ),
     );
   }

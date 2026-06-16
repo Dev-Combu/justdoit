@@ -1,7 +1,9 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:justdoit/firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import 'viewmodels/todo_viewmodel.dart';
@@ -12,6 +14,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await windowManager.ensureInitialized();
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   const windowOptions = WindowOptions(
     size: Size(700, 500),

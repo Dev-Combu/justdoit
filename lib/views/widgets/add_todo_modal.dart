@@ -25,7 +25,7 @@ class AddTodoModal extends StatefulWidget {
 
 class _AddTodoModalState extends State<AddTodoModal> {
   final TextEditingController _titleController = TextEditingController();
-  String _selectedStatus = 'NOW';
+  String _selectedStatus = 'TODAY';
 
   @override
   void dispose() {
@@ -112,14 +112,14 @@ class _AddTodoModalState extends State<AddTodoModal> {
             ),
             const SizedBox(height: 8),
             Row(
-              children: ['NOW', 'TODAY', 'WEEK'].map((status) {
+              children: ['TODAY', 'WEEK', 'MONTH'].map((status) {
                 final isSelected = _selectedStatus == status;
                 final Color selectedColor;
                 switch (status) {
-                  case 'NOW':
+                  case 'TODAY':
                     selectedColor = Colors.redAccent.shade100;
                     break;
-                  case 'TODAY':
+                  case 'WEEK':
                     selectedColor = Colors.blueAccent.shade100;
                     break;
                   default:

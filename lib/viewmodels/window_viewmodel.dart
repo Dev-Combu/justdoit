@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
+import 'dart:io';
 
 class WindowViewModel with ChangeNotifier {
   bool _isLocked = true;
@@ -30,12 +31,19 @@ class WindowViewModel with ChangeNotifier {
   }
 
   Future<void> _applyLockState() async {
-    try {
+  try {
+    // 윈도우에서는 이 커스텀 채널 호출을 아예 건너뛰도록 고칩니다.
+    if (!Platform.isWindows) {
       await _windowChannel
           .invokeMethod('setWindowLocked', {'locked': _isLocked});
-      await windowManager.setResizable(!_isLocked);
-    } on PlatformException catch (e) {
-      debugPrint('Failed to set window lock state: ${e.message}');
     }
+    
+    // 윈도우와 맥 공통으로 작동하는 패키지 기능들
+    await windowManager.setResizable(!_isLocked);
+    await windowManager.setAlwaysOnTop(_isLocked); // 👈 위젯처럼 항상 위에 띄우는 기능!
+    
+  } on PlatformException catch (e) {
+    debugPrint('Failed to set window lock state: ${e.message}');
   }
+}
 }
