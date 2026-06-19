@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:justdoit/viewmodels/auth_viewmodel.dart';
 import 'package:justdoit/viewmodels/window_viewmodel.dart';
 import 'package:justdoit/views/widgets/add_todo_modal.dart';
 import 'package:justdoit/views/widgets/record_modal.dart';
@@ -8,6 +9,34 @@ import 'package:window_manager/window_manager.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('로그아웃'),
+          content: const Text('정말 로그아웃하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context); // 다이얼로그 닫기
+                await context.read<AuthViewModel>().logout();
+              },
+              child: const Text(
+                '로그아웃',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +63,7 @@ class DashboardScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white.withOpacity(0.4),
       drawer: RecordModal(),
       body: SafeArea(
         child: Stack(
@@ -134,6 +163,16 @@ class DashboardScreen extends StatelessWidget {
                               ? 'Unlock to move/resize'
                               : 'Lock widget on desktop',
                         ),
+                        if (!isLocked)
+                          IconButton(
+                            onPressed: () => _showLogoutDialog(context),
+                            icon: const Icon(
+                              Icons.logout_rounded,
+                              color: Colors.redAccent,
+                              size: 20,
+                            ),
+                            tooltip: '로그아웃',
+                          ),
                       ],
                     ),
                   ),

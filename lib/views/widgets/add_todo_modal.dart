@@ -8,6 +8,7 @@ class AddTodoModal extends StatefulWidget {
 
   /// Shows the add-todo bottom sheet and returns once dismissed.
   static void show(BuildContext context) {
+    final todoVM = Provider.of<TodoViewModel>(context, listen: false);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -15,7 +16,10 @@ class AddTodoModal extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (_) => const AddTodoModal(),
+      builder: (_) => ChangeNotifierProvider.value(
+        value: todoVM,
+        child: const AddTodoModal(),
+      ),
     );
   }
 

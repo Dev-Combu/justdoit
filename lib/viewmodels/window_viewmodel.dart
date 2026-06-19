@@ -38,9 +38,9 @@ class WindowViewModel with ChangeNotifier {
           .invokeMethod('setWindowLocked', {'locked': _isLocked});
     }
     
-    // 윈도우와 맥 공통으로 작동하는 패키지 기능들
+    // 리사이즈 가능 여부 제어
     await windowManager.setResizable(!_isLocked);
-    await windowManager.setAlwaysOnTop(_isLocked); // 👈 위젯처럼 항상 위에 띄우는 기능!
+    // 창 레벨(alwaysOnBottom/Top) 제어는 Swift 네이티브 코드에서 처리
     
   } on PlatformException catch (e) {
     debugPrint('Failed to set window lock state: ${e.message}');

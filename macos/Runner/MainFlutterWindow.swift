@@ -45,24 +45,38 @@ class MainFlutterWindow: NSWindow {
     super.awakeFromNib()
   }
 
+  // Track lock state to control key/main window behavior
+  private var isLocked: Bool = true
+
+  // 항상 key window가 될 수 있어야 텍스트(비밀번호, 할일) 입력이 가능함
+  override var canBecomeKey: Bool {
+    return true
+  }
+
+  // 항상 main window가 될 수 있어야 정상 작동
+  override var canBecomeMain: Bool {
+    return true
+  }
+
   private func setWindowLocked(_ locked: Bool) {
-    // Save current frame to prevent macOS from resetting/snapping window size during level changes
+    isLocked = locked
+
     let currentFrame = self.frame
 
     if locked {
-      // 1. Lock Mode: pin to below normal level (always on bottom but still interactive)
-      self.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
-      self.level = NSWindow.Level(rawValue: NSWindow.Level.normal.rawValue - 1)
+      // 1. Lock Mode: 고정된 위치지만 레벨은 normal
+      self.level = .normal
     } else {
-      // 2. Edit Mode: normal floating window (always on top of normal windows so it's easy to drag and resize)
-      self.collectionBehavior = [.managed, .participatesInCycle]
+      // 2. Edit Mode: 드래그를 위해 플로팅 레벨
       self.level = .floating
     }
 
-    // Re-apply frame immediately
+    // 포커스 강제
+    self.makeKeyAndOrderFront(nil)
+    NSApp.activate(ignoringOtherApps: true)
+
     self.setFrame(currentFrame, display: true)
     
-    // Also re-apply on the next main loop run to counter any deferred system-initiated frame resets
     DispatchQueue.main.async { [weak self] in
       self?.setFrame(currentFrame, display: true)
     }

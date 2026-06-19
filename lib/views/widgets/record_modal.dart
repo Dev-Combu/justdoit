@@ -1,41 +1,16 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodels/auth_viewmodel.dart';
+import '../../viewmodels/todo_viewmodel.dart';
 
-class RecordModal extends StatefulWidget {
+class RecordModal extends StatelessWidget {
   const RecordModal({super.key});
 
-  @override
-  State<RecordModal> createState() => _RecordModalState();
-}
-
-class _RecordModalState extends State<RecordModal> {
-  
-  // 💾 SharedPreferences에서 완료된 기록 리스트를 읽어오는 비동기 함수
-  Future<List<Map<String, dynamic>>> _loadRecords() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final List<String>? jsonList = prefs.getStringList('completedTodos');
-      
-      if (jsonList == null || jsonList.isEmpty) {
-        return [];
-      }
-      
-      // 저장된 JSON 문자열들을 다시 Dart의 Map(딕셔너리) 형태로 변환합니다.
-      return jsonList.map((item) => jsonDecode(item) as Map<String, dynamic>).toList();
-    } catch (e) {
-      debugPrint("Error loading records: $e");
-      return [];
-    }
-  }
-
-  // 🕒 ISO8601 시간 문자열을 보기 편한 "방금 전", "X분 전" 형식으로 바꿔주는 간단한 팁 함수
   String _convertToRelativeTime(String? isoString) {
     if (isoString == null) return '완료됨';
     try {
       final completedTime = DateTime.parse(isoString);
       final difference = DateTime.now().difference(completedTime);
-
       if (difference.inMinutes < 1) return '방금 전 완료';
       if (difference.inMinutes < 60) return '${difference.inMinutes}분 전 완료';
       if (difference.inHours < 24) return '${difference.inHours}시간 전 완료';
@@ -45,62 +20,145 @@ class _RecordModalState extends State<RecordModal> {
     }
   }
 
+  void _showLogoutDialog(BuildContext context, AuthViewModel authVM) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('로그아웃'),
+          content: const Text('정말 로그아웃하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context); // 다이얼로그 닫기
+                await authVM.logout();
+              },
+              child: const Text(
+                '로그아웃',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final todoVM = context.read<TodoViewModel>();
+    final authVM = context.read<AuthViewModel>();
+
     return Drawer(
       child: Container(
-        color: const Color(0xFF1E1E1E), // 맥북 다크모드 스타일 배경
+        color: const Color(0xFF1E1E1E),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── 사이드바 헤더 영역 ──────────────────────────────────
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Color(0xFF2D2D2D)),
+            // ── 헤더 ──
+            DrawerHeader(
+              decoration: const BoxDecoration(color: Color(0xFF2D2D2D)),
               margin: EdgeInsets.zero,
-              child: Center(
-                child: Text(
-                  '최근 완료한 기록',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    '최근 완료한 기록',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // 현재 사용자 표시
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.indigo.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.person_outline, color: Colors.indigo, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          authVM.userId ?? '',
+                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            
-            // ── 진짜 데이터 바인딩 영역 ──────────────────────────────
+
+            // ── 기록 목록 ──
             Expanded(
-              child: FutureBuilder<List<Map<String, dynamic>>>(
-                future: _loadRecords(), // 비동기 함수 호출
+              child: StreamBuilder<List<Map<String, dynamic>>>(
+                stream: todoVM.recordsStream,
                 builder: (context, snapshot) {
-                  // 로딩 중일 때
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  
-                  // 에러가 나거나 데이터가 없을 때
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Center(
                       child: Text(
                         '아직 완료한 기록이 없습니다.\n할 일을 밀어서 완료해 보세요! 🔥',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey, fontSize: 13, height: 1.5),
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                          height: 1.5,
+                        ),
                       ),
                     );
                   }
 
                   final records = snapshot.data!;
-
-                  // 기록 목록 뿌려주기
                   return ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     itemCount: records.length,
                     itemBuilder: (context, index) {
                       final item = records[index];
-                      return RecordTile(
+                      return _RecordTile(
                         title: item['title'] ?? '제목 없음',
-                        time: _convertToRelativeTime(item['completedAt']), // 저장했던 시간 변환
+                        time: _convertToRelativeTime(item['completedAt']),
                       );
                     },
                   );
                 },
+              ),
+            ),
+
+            // ── 로그아웃 ──
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context); // drawer 닫기
+                    _showLogoutDialog(context, authVM);
+                  },
+                  icon: const Icon(Icons.logout, color: Colors.redAccent),
+                  label: const Text(
+                    '로그아웃',
+                    style: TextStyle(color: Colors.redAccent),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.redAccent),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
               ),
             ),
           ],
@@ -110,12 +168,11 @@ class _RecordModalState extends State<RecordModal> {
   }
 }
 
-// 📌 사이드바에 들어갈 개별 기록 컴포넌트 (기존 코드 유지)
-class RecordTile extends StatelessWidget {
+class _RecordTile extends StatelessWidget {
   final String title;
   final String time;
 
-  const RecordTile({super.key, required this.title, required this.time});
+  const _RecordTile({required this.title, required this.time});
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +188,11 @@ class RecordTile extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           const SizedBox(height: 4),
           Text(

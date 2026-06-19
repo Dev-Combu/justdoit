@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // users/{userId} 경로 — 비밀번호(userId)를 아는 사람만 읽기/쓰기 가능
+    // 인증 없이 경로 자체가 비밀번호 역할을 함
+    match /users/{userId}/{document=**} {
+      allow read, write: if true; // 앱에서만 접근하므로 일단 전체 허용
+      // 더 엄격하게 하려면 아래 주석 해제 후 Firebase Auth 연동 필요:
+      // allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
