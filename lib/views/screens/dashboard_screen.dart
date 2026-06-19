@@ -106,13 +106,22 @@ class DashboardScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Text(
-                              'Just Do It',
-                              style: Theme.of(context).textTheme.headlineSmall
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.black87,
-                                  ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  'Just Do It',
+                                  style: Theme.of(context).textTheme.headlineSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.black87,
+                                      ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  "ver.1.0.2"
+                                ),
+                              ],
                             ),
                             if (!isLocked) ...[
                               const SizedBox(width: 8),
