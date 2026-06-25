@@ -29,7 +29,43 @@ class AddTodoModal extends StatefulWidget {
 
 class _AddTodoModalState extends State<AddTodoModal> {
   final TextEditingController _titleController = TextEditingController();
-  String _selectedStatus = 'TODAY';
+  DateTime? _selectedDate;
+
+
+  // Determine status based on a given date
+  String _determineStatus(DateTime date) {
+    final now = DateTime.now();
+    // Today
+    if (date.year == now.year && date.month == now.month && date.day == now.day) {
+      return 'TODAY';
+    }
+    // Week: compare ISO week numbers
+    int weekNumber(DateTime d) {
+      final firstDayOfYear = DateTime(d.year, 1, 1);
+      final daysOffset = firstDayOfYear.weekday % 7;
+      final firstMonday = firstDayOfYear.add(Duration(days: daysOffset == 0 ? 0 : 7 - daysOffset));
+      return ((d.difference(firstMonday).inDays) / 7).floor() + 1;
+    }
+
+    if (weekNumber(date) == weekNumber(now)) {
+      return 'WEEK';
+    }
+    // Otherwise treat as month
+    return 'MONTH';
+  }
+
+  void _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: now.subtract(const Duration(days: 365)),
+      lastDate: now.add(const Duration(days: 365 * 5)),
+    );
+    if (picked != null) {
+      setState(() => _selectedDate = picked);
+    }
+  }
 
   @override
   void dispose() {
@@ -37,27 +73,30 @@ class _AddTodoModalState extends State<AddTodoModal> {
     super.dispose();
   }
 
-  void _submit() {
-    final text = _titleController.text.trim();
-    if (text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a task title.'),
-          behavior: SnackBarBehavior.floating,
+    void _submit() {
+      final text = _titleController.text.trim();
+      if (text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please enter a task title.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+      // Determine status automatically if not selected
+      final status = _selectedDate != null ? _determineStatus(_selectedDate!) : 'TODAY';
+      Provider.of<TodoViewModel>(context, listen: false).addTodo(
+        Todo(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          title: text,
+          status: status,
+          completedAt: DateTime(1970),
+          dueDate: _selectedDate,
         ),
       );
-      return;
+      Navigator.pop(context);
     }
-    Provider.of<TodoViewModel>(context, listen: false).addTodo(
-      Todo(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        title: text,
-        status: _selectedStatus,
-        completedAt: DateTime(1970),
-      ),
-    );
-    Navigator.pop(context);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,45 +154,27 @@ class _AddTodoModalState extends State<AddTodoModal> {
                   ),
             ),
             const SizedBox(height: 8),
+            // Date picker UI
             Row(
-              children: ['TODAY', 'WEEK', 'MONTH'].map((status) {
-                final isSelected = _selectedStatus == status;
-                final Color selectedColor;
-                switch (status) {
-                  case 'TODAY':
-                    selectedColor = Colors.redAccent.shade100;
-                    break;
-                  case 'WEEK':
-                    selectedColor = Colors.blueAccent.shade100;
-                    break;
-                  default:
-                    selectedColor = Colors.greenAccent.shade100;
-                }
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: ChoiceChip(
-                      label: Center(
-                        child: Text(
-                          status,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isSelected
-                                ? colorScheme.onPrimaryContainer
-                                : colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                      selected: isSelected,
-                      selectedColor: selectedColor.withValues(alpha: 0.3),
-                      onSelected: (selected) {
-                        if (selected) setState(() => _selectedStatus = status);
-                      },
-                    ),
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedDate == null
+                        ? 'No date selected'
+                        : 'Due: <${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}>',
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                );
-              }).toList(),
+                ),
+                TextButton.icon(
+                  onPressed: _pickDate,
+                  icon: const Icon(Icons.calendar_today),
+                  label: const Text('Select Date'),
+                ),
+              ],
             ),
+            const SizedBox(height: 24),
+
+
             const SizedBox(height: 32),
             FilledButton.icon(
               onPressed: _submit,

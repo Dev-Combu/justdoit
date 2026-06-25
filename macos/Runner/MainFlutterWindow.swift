@@ -19,6 +19,12 @@ class MainFlutterWindow: NSWindow {
     self.titlebarAppearsTransparent = true
     self.titleVisibility = .hidden
 
+    // Enable widget-like collection behaviors:
+    // - .canJoinAllSpaces: Keep visible on all virtual spaces/desktops
+    // - .stationary: Do not move or hide during Mission Control / Exposé / "Show Desktop" (F11/gestures)
+    // - .ignoresCycle: Do not include in Cmd+Tab or other window cycles
+    self.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+
     // Register MethodChannel to communicate lock state from Flutter Dart code
     let channel = FlutterMethodChannel(
       name: "com.example.justdoit/window",

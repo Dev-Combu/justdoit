@@ -32,6 +32,7 @@ class TodoViewModel with ChangeNotifier {
             status: data['status'] ?? 'TODAY',
             isCompleted: data['isCompleted'] ?? false,
             completedAt: (data['completedAt'] as Timestamp?)?.toDate() ?? DateTime(1970),
+            dueDate: data['dueDate'] != null ? DateTime.parse(data['dueDate'] as String) : null,
           );
         }).toList();
         notifyListeners();
@@ -48,11 +49,28 @@ class TodoViewModel with ChangeNotifier {
         'isCompleted': todo.isCompleted,
         'createdAt': FieldValue.serverTimestamp(),
         'completedAt': null,
+        // Store dueDate as ISO string if provided
+        if (todo.dueDate != null) 'dueDate': todo.dueDate!.toIso8601String(),
       });
     } catch (e) {
       debugPrint('Error adding todo: $e');
     }
   }
+
+  // Stream of todos including dueDate (used for calendar view)
+  Stream<List<Todo>> get todoStream => _todosRef.snapshots().map((snapshot) {
+        return snapshot.docs.map((doc) {
+          final data = doc.data();
+          return Todo(
+            id: doc.id,
+            title: data['title'] ?? '',
+            status: data['status'] ?? 'TODAY',
+            isCompleted: data['isCompleted'] ?? false,
+            completedAt: (data['completedAt'] as Timestamp?)?.toDate() ?? DateTime(1970),
+            dueDate: data['dueDate'] != null ? DateTime.parse(data['dueDate'] as String) : null,
+          );
+        }).toList();
+      });
 
   Future<void> toggleTodo(String id, bool isCompleted) async {
     try {

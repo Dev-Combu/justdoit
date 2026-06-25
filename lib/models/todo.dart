@@ -4,6 +4,7 @@ class Todo {
   final String status;
   bool isCompleted;
   final DateTime completedAt;
+  DateTime? dueDate;
 
   Todo({
     required this.id,
@@ -11,5 +12,6 @@ class Todo {
     required this.status,
     required this.completedAt,
     this.isCompleted = false,
+    this.dueDate,
   });
 }

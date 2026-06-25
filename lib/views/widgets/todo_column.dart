@@ -32,10 +32,38 @@ class TodoColumn extends StatelessWidget {
         headerIcon = Icons.calendar_month;
     }
 
+    final now = DateTime.now();
     final todos = context
         .watch<TodoViewModel>()
         .todos
-        .where((todo) => todo.status == status)
+        .where((todo) {
+          final due = todo.dueDate;
+          if (due == null) return false; // no date -> not shown in columns
+          if (status == 'TODAY') {
+            return due.year == now.year && due.month == now.month && due.day == now.day;
+          }
+          if (status == 'WEEK') {
+            // week starts Monday
+            final weekStart = now.subtract(Duration(days: now.weekday - 1));
+            final weekEnd = weekStart.add(Duration(days: 6));
+            return due.isAfter(weekStart.subtract(Duration(seconds: 1))) &&
+                due.isBefore(weekEnd.add(Duration(days: 1))) &&
+                !(due.year == now.year && due.month == now.month && due.day == now.day);
+          }
+          if (status == 'MONTH') {
+            // within current month but not this week
+            final monthStart = DateTime(now.year, now.month, 1);
+            final monthEnd = DateTime(now.year, now.month + 1, 0);
+            final weekStart = now.subtract(Duration(days: now.weekday - 1));
+            final weekEnd = weekStart.add(Duration(days: 6));
+            final inMonth = due.isAfter(monthStart.subtract(Duration(seconds: 1))) &&
+                due.isBefore(monthEnd.add(Duration(days: 1)));
+            final inWeek = due.isAfter(weekStart.subtract(Duration(seconds: 1))) &&
+                due.isBefore(weekEnd.add(Duration(days: 1)));
+            return inMonth && !inWeek;
+          }
+          return false;
+        })
         .toList();
 
     return Container(

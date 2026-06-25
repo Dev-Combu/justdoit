@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:justdoit/models/todo.dart';
 import 'package:justdoit/viewmodels/auth_viewmodel.dart';
+import 'package:justdoit/viewmodels/todo_viewmodel.dart';
 import 'package:justdoit/viewmodels/window_viewmodel.dart';
+import 'package:justdoit/views/screens/todo_list_screen.dart';
 import 'package:justdoit/views/widgets/add_todo_modal.dart';
 import 'package:justdoit/views/widgets/record_modal.dart';
 import 'package:justdoit/views/widgets/todo_column.dart';
+import 'package:justdoit/views/screens/calendar_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
+
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -63,7 +68,7 @@ class DashboardScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      backgroundColor: Colors.white.withOpacity(0.4),
+      backgroundColor: Colors.white.withValues(alpha: 0.4),
       drawer: RecordModal(),
       body: SafeArea(
         child: Stack(
@@ -111,16 +116,16 @@ class DashboardScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   'Just Do It',
-                                  style: Theme.of(context).textTheme.headlineSmall
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
                                       ?.copyWith(
                                         fontWeight: FontWeight.w900,
                                         color: Colors.black87,
                                       ),
                                 ),
                                 const SizedBox(width: 6),
-                                Text(
-                                  "ver.1.0.2"
-                                ),
+                                Text("ver.1.0.2"),
                               ],
                             ),
                             if (!isLocked) ...[
@@ -154,8 +159,39 @@ class DashboardScreen extends StatelessWidget {
                           ),
                         ),
                         IconButton(
+                          icon: const Icon(Icons.list),
+                          tooltip: 'All Tasks List',
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ChangeNotifierProvider.value(
+                                value: Provider.of<TodoViewModel>(
+                                  context,
+                                  listen: false,
+                                ),
+                                child: const TodoListScreen(),
+                              ),
+                            ),
+                          ),
+                        ),
+                        IconButton(
                           onPressed: () => AddTodoModal.show(context),
                           icon: const Icon(Icons.add),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChangeNotifierProvider.value(
+                                value: Provider.of<TodoViewModel>(
+                                  context,
+                                  listen: false,
+                                ),
+                                child: const CalendarScreen(),
+                              ),
+                            ),
+                          ),
+                          icon: const Icon(Icons.calendar_today),
+                          tooltip: 'Calendar',
                         ),
                         IconButton(
                           onPressed: windowVM.toggleLock,
